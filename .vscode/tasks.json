@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {"label":"SmartOrder: Start","type":"shell","command":"./scripts/dev.sh","isBackground":true,"problemMatcher":[],"presentation":{"reveal":"always","panel":"dedicated"}},
+    {"label":"SmartOrder: Setup","type":"shell","command":"./scripts/setup.sh","problemMatcher":[]},
+    {"label":"SmartOrder: Test All","type":"shell","command":"./scripts/test.sh","group":"test","problemMatcher":[]}
+  ]
+}

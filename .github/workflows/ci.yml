@@ -1,0 +1,59 @@
+name: Validate SmartOrder
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: smartorder_test
+          POSTGRES_PASSWORD: ci_ephemeral_only
+          POSTGRES_DB: smartorder_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U smartorder_test -d smartorder_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m venv backend/.venv && backend/.venv/bin/pip install -r backend/requirements.lock.txt
+      - run: .venv/bin/python -m pytest -q
+        working-directory: backend
+      - run: .venv/bin/python -m pytest -q
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://smartorder_test:ci_ephemeral_only@localhost:5432/smartorder_test
+      - run: npm ci && npm run build
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e
+        working-directory: frontend
+        env:
+          E2E_DATABASE_URL: postgresql+psycopg://smartorder_test:ci_ephemeral_only@localhost:5432/smartorder_test
+      - run: npm run build:vercel
+        working-directory: frontend
+        env:
+          BACKEND_ORIGIN: https://smartorder-ci-placeholder.onrender.com
+      - run: python3 scripts/init-env.py && docker compose config --quiet && docker compose build
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-report
+          path: frontend/playwright-report
+          retention-days: 7
+# No push to registry, deployment token, paid resource creation or cloud deploy step.

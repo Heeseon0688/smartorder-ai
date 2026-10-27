@@ -1,0 +1,9 @@
+export type Option = {id:number; name:string; price:number}
+export type Menu = {id:number; category_id:number; name:string; description:string; price:number; image_url:string; sold_out:boolean; badge:string; options:Option[]}
+export type Category = {id:number; name:string}
+export type Catalog = {store:{name:string;slug:string;description:string};table_number:number;categories:Category[];menus:Menu[]}
+export type Status = 'pending'|'cooking'|'completed'
+export type Order = {id:number;number:string;table_number:number;status:Status;total:number;payment_status:string;note:string;created_at:string;items:{id:number;menu_id:number;name:string;unit_price:number;quantity:number;subtotal:number;options:{name:string;price:number}[]}[];history:{status:Status;changed_at:string}[]}
+export type Stats = {period:{start:string;end:string;timezone:string};revenue:number;orders:number;average:number;today:{revenue:number;orders:number;average:number};yesterday:{revenue:number;orders:number};daily:{date:string;label:string;revenue:number;orders:number}[];hourly:{hour:number;orders:number}[];ranking:{id:number;name:string;image_url:string;quantity:number;revenue:number}[];statuses:Record<string,number>;basis:string}
+export type Analysis = {source:string;notice:string;answer:string;suggestions:string[];period:Stats['period'];metrics:{revenue:number;orders:number;average:number};basis:string}
+export type AdminUser = {name:string;email:string;store_name:string}

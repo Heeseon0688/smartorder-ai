@@ -1,0 +1,36 @@
+# Configuration only: creating/deploying this Blueprint requires user approval.
+services:
+  - type: web
+    name: smartorder-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/ready
+    autoDeployTrigger: 'off'
+    numInstances: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: COOKIE_SECURE
+        value: 'true'
+      - key: SEED_DEMO
+        value: 'false'
+      - key: ENABLE_DEMO_LINK
+        value: 'false'
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      # Render's proxy is the TCP peer; trust X-Forwarded-For so per-IP rate limits see real clients.
+      - key: FORWARDED_ALLOW_IPS
+        value: '*'
+      - key: LOG_LEVEL
+        value: info
