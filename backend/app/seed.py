@@ -26,16 +26,10 @@ CATALOG = [
     ('디저트', '클래식 바닐라 쉐이크', 5900, '진한 바닐라 아이스크림으로 만든 부드러운 쉐이크.', 'shake', ''),
 ]
 
-def seed(db):
-    if db.scalar(select(Store).limit(1)):
-        return
-    rng = random.Random(42)
-    store = Store(slug='smart-burger', name='Smart Burger', description='좋은 재료, 정직한 맛. 매일 새롭게 만드는 수제 버거.')
-    db.add(store); db.flush()
-    admin = AdminUser(store_id=store.id, email=settings.demo_admin_email, name='김스마트', password_hash=password_hasher.hash(settings.demo_admin_password))
-    db.add(admin)
-    tables = [Table(store_id=store.id, number=i, token=secrets.token_urlsafe(32)) for i in range(1,11)]
-    db.add_all(tables)
+STORE_DESCRIPTION = '좋은 재료, 정직한 맛. 매일 새롭게 만드는 수제 버거.'
+
+def create_catalog(db, store):
+    """Smart Burger categories and menus only: no orders, no accounts."""
     categories = {}
     for i, name in enumerate(dict.fromkeys(row[0] for row in CATALOG)):
         cat = MenuCategory(store_id=store.id, name=name, position=i)
@@ -46,6 +40,19 @@ def seed(db):
         if category == '시그니처 버거':
             menu.options = [MenuOption(name='체더 치즈 추가', price=1000), MenuOption(name='비프 패티 추가', price=3000), MenuOption(name='베이컨 추가', price=1500)]
         db.add(menu); menus.append(menu)
+    return menus
+
+def seed(db):
+    if db.scalar(select(Store).limit(1)):
+        return
+    rng = random.Random(42)
+    store = Store(slug='smart-burger', name='Smart Burger', description=STORE_DESCRIPTION)
+    db.add(store); db.flush()
+    admin = AdminUser(store_id=store.id, email=settings.demo_admin_email, name='김스마트', password_hash=password_hasher.hash(settings.demo_admin_password))
+    db.add(admin)
+    tables = [Table(store_id=store.id, number=i, token=secrets.token_urlsafe(32)) for i in range(1,11)]
+    db.add_all(tables)
+    menus = create_catalog(db, store)
     db.flush()
     now = datetime.now(ZoneInfo('Asia/Seoul'))
     for day in range(7):

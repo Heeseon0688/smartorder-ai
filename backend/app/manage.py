@@ -13,7 +13,7 @@ from .config import settings
 from .db import Base, SessionLocal, engine
 from .models import Store, Table, AdminUser
 from .security import password_hasher
-from .seed import seed
+from .seed import seed, create_catalog, STORE_DESCRIPTION
 import secrets
 
 def alembic_config():
@@ -48,14 +48,17 @@ def bootstrap(args):
         store = db.scalar(select(Store).where(Store.slug==args.slug))
         if store:
             raise SystemExit('Store already exists. Use a reviewed administrative workflow; no existing store was changed.')
-        store = Store(slug=args.slug, name=args.name, description='')
+        store = Store(slug=args.slug, name=args.name, description=STORE_DESCRIPTION if args.with_menu else '')
         db.add(store); db.flush()
         db.add(AdminUser(store_id=store.id,email=email,name='관리자',password_hash=password_hasher.hash(password)))
         db.add_all(Table(store_id=store.id,number=n,token=secrets.token_urlsafe(32)) for n in range(1,11))
-        from .models import MenuCategory
-        db.add_all(MenuCategory(store_id=store.id,name=name,position=i) for i,name in enumerate(['버거','사이드','음료','디저트']))
+        if args.with_menu:
+            create_catalog(db, store)
+        else:
+            from .models import MenuCategory
+            db.add_all(MenuCategory(store_id=store.id,name=name,position=i) for i,name in enumerate(['버거','사이드','음료','디저트']))
         db.commit()
-    print('Store, categories, 10 QR tables and administrator created. No demo orders or menu data added.')
+    print('Store, 10 QR tables and administrator created.' + (' Smart Burger menu added.' if args.with_menu else ' Empty categories added.') + ' No demo orders or demo accounts.')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -65,6 +68,7 @@ def main():
     sub.add_parser('seed-demo')
     boot = sub.add_parser('bootstrap')
     boot.add_argument('--slug',default='smart-burger');boot.add_argument('--name',default='Smart Burger')
+    boot.add_argument('--with-menu',action='store_true',help='Add the Smart Burger menu catalog (no orders or demo accounts)')
     args=parser.parse_args()
     if args.command == 'migrate': command.upgrade(alembic_config(),'head')
     elif args.command == 'adopt-legacy': adopt_legacy()

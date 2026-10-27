@@ -110,3 +110,20 @@ def test_valid_production_configuration():
         migration_database_url='postgresql://u:p@db.example/app?sslmode=require',
         frontend_url='https://app.example',allowed_origins=['https://app.example'])
     assert value.cookie_secure
+
+
+def test_bootstrap_with_menu_adds_catalog_without_orders_or_demo_account(tmp_path,monkeypatch):
+    from sqlalchemy import create_engine,text
+    monkeypatch.setenv('BOOTSTRAP_ADMIN_EMAIL','owner@example.com')
+    monkeypatch.setenv('BOOTSTRAP_ADMIN_PASSWORD','a-unique-owner-passphrase')
+    run_manage(tmp_path,'migrate')
+    run_manage(tmp_path,'bootstrap','--with-menu')
+    engine=create_engine(f'sqlite:///{tmp_path}/migration.db')
+    with engine.connect() as c:
+        assert c.execute(text('SELECT COUNT(*) FROM menus')).scalar()==16
+        assert c.execute(text('SELECT COUNT(*) FROM tables')).scalar()==10
+        assert c.execute(text('SELECT COUNT(*) FROM orders')).scalar()==0
+        assert c.execute(text('SELECT email FROM admin_users')).scalars().all()==['owner@example.com']
+    with pytest.raises(subprocess.CalledProcessError):
+        run_manage(tmp_path,'bootstrap','--with-menu')  # never overwrites an existing store/admin
+    engine.dispose()
