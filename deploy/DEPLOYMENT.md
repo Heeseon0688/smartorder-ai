@@ -175,7 +175,7 @@ GitHub 저장소에서 Blueprint를 적용하거나 Docker Web Service를 만듭
 | Dockerfile Path | `./backend/Dockerfile` |
 | Docker Build Context | `./backend` |
 | Health Check Path | `/api/ready` |
-| Start | Dockerfile 기본 CMD (`./start.sh`) |
+| Start | Dockerfile 기본 CMD (migrate → uvicorn) |
 | Auto Deploy | Off |
 | 인스턴스 / worker | 1 / 1 |
 
