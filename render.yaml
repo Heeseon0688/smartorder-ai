@@ -1,4 +1,4 @@
-# Configuration only: creating/deploying this Blueprint requires user approval.
+# Render deploys main automatically after GitHub Actions CI passes.
 services:
   - type: web
     name: smartorder-api
@@ -8,7 +8,7 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /api/ready
-    autoDeployTrigger: 'off'
+    autoDeployTrigger: checksPass
     numInstances: 1
     envVars:
       - key: APP_ENV

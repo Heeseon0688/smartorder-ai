@@ -1,6 +1,6 @@
 # SmartOrder AI — Docker 및 클라우드 배포
 
-이 문서는 **구성 완료**와 **실제 실행·배포 완료**를 구분합니다. 현재 실행 증거는 `artifacts/deployment-verification.md`에 있습니다. 클라우드 리소스 생성·GitHub push·공개 배포는 사용자 승인 후 수행합니다. 자동 배포는 기본적으로 비활성화되어 있습니다.
+이 문서는 **구성 완료**와 **실제 실행·배포 완료**를 구분합니다. 현재 실행 증거는 `artifacts/deployment-verification.md`에 있습니다. 클라우드 리소스 생성·GitHub push·공개 배포는 사용자 승인 후 수행합니다. `main` 브랜치 push 시 Vercel은 자동 배포하고, Render는 GitHub Actions CI 통과 후 자동 배포합니다.
 
 ## 1. 기존 구조와 변경점
 
@@ -195,7 +195,7 @@ Render는 `PORT`를 제공합니다. 컨테이너는 `0.0.0.0:$PORT`로 실행�
 | Build Command | `npm run build:vercel` |
 | Output Directory override | 설정하지 않음 — Build Output API 사용 |
 | Production 환경변수 | `BACKEND_ORIGIN=https://실제서비스.onrender.com` |
-| Git 자동 배포 | 비활성화 (`git.deploymentEnabled=false`) |
+| Git 자동 배포 | `main` push 시 자동 배포 |
 
 빌드 스크립트는 Vite 정적 파일을 `.vercel/output/static`에 만들고 `config.json`에 실제 백엔드 origin을 반영합니다. `/api/(.*)`가 Render로 전달되고 파일이 없는 나머지 경로는 `index.html`로 이동하므로 QR 깊은 링크가 동작합니다. `VITE_WS_URL`은 같은 origin에서 `wss://…/ws`로 자동 생성합니다. 클라우드 빌드는 데모 로그인 버튼을 숨깁니다.
 
@@ -207,7 +207,7 @@ cd frontend
 BACKEND_ORIGIN=https://example-service.onrender.com npm run build:vercel
 ```
 
-첫 공개 배포와 이후 수동 배포는 승인된 시점에 진행합니다. 이후 자동 배포를 원하면 별도로 승인받은 뒤 `git.deploymentEnabled`와 Render `autoDeployTrigger`를 변경합니다.
+Render는 `autoDeployTrigger: checksPass`로 CI 통과 후에만 배포합니다. 자동 배포를 멈추려면 Render의 Auto-Deploy를 Off로, Vercel의 Git 연결을 해제하세요.
 
 ### E. 관리자 준비와 QR 검증
 
