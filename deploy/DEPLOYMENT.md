@@ -24,7 +24,17 @@ docker compose version
 docker info
 ```
 
-`docker version`에 Client뿐 아니라 Server 정보가 있어야 합니다. 명령을 찾지 못하면 Docker Desktop의 CLI 설치 설정을 확인하거나 `export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"`를 적용하세요. Homebrew를 사용하는 경우 `brew install --cask docker`로 설치할 수도 있습니다. 이 프로젝트 작업에서는 Docker Desktop 앱 설치·OS 초기 설정을 자동 수행하지 않았습니다.
+`docker version`에 Client뿐 아니라 Server 정보가 있어야 합니다. 명령을 찾지 못하면 Docker Desktop의 CLI 설치 설정을 확인하거나 `export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"`를 적용하세요. Homebrew를 사용하는 경우 `brew install --cask docker`로 설치할 수도 있습니다.
+
+GUI 없이 설치하려면 **Colima**를 사용할 수 있습니다 (이 프로젝트 검증 환경):
+
+```bash
+brew install colima docker docker-compose
+mkdir -p ~/.docker && echo '{"cliPluginsExtraDirs":["/opt/homebrew/lib/docker/cli-plugins"]}' > ~/.docker/config.json
+colima start --arch aarch64 --cpu 4 --memory 4 --vm-type vz --mount-type virtiofs
+```
+
+Mac 재부팅 후에는 `colima start`로 Docker 엔진을 다시 켭니다 (자동 시작: `brew services start colima`). 이 프로젝트 작업에서는 Docker Desktop 앱 설치·OS 초기 설정을 자동 수행하지 않았습니다.
 
 ### 실행
 
