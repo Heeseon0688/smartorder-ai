@@ -12,9 +12,9 @@ test('mobile QR order → admin acceptance → customer live completion',async({
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message))
   await login(page)
   await expect(page.getByText('실시간 연결 중')).toBeVisible()
-  await mkdir('../artifacts',{recursive:true})
+  await mkdir('test-results/screenshots',{recursive:true})
   await expect(page.locator('.recharts-area-area')).toHaveAttribute('d',/M.+/);
-  await page.screenshot({path:'../artifacts/admin-dashboard.png',fullPage:true})
+  await page.screenshot({path:'test-results/screenshots/admin-dashboard.png',fullPage:true})
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true})
   const customer=await context.newPage()
   customer.on('pageerror',e=>errors.push(e.message))
@@ -23,7 +23,7 @@ test('mobile QR order → admin acceptance → customer live completion',async({
   await expect(customer.getByText('실시간 주문 연결됨')).toBeVisible()
   await customer.evaluate(async()=>{await document.fonts.ready;for(const img of document.querySelectorAll('img'))img.loading='eager'});
   await expect.poll(()=>customer.locator('img').evaluateAll(imgs=>imgs.every(i=>i.complete&&i.naturalWidth>0))).toBeTruthy();
-  await customer.screenshot({path:'../artifacts/customer-mobile.png',fullPage:true})
+  await customer.screenshot({path:'test-results/screenshots/customer-mobile.png',fullPage:true})
   expect(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   await customer.getByRole('button',{name:'스마트 클래식 버거 8,900원',exact:true}).click()
   await customer.getByLabel('체더 치즈 추가').check()
@@ -44,7 +44,7 @@ test('mobile QR order → admin acceptance → customer live completion',async({
   await expect(customer.locator('.success-body .status-badge')).toHaveText('조리 중',{timeout:7000})
   await card.getByRole('button',{name:'조리 완료'}).click()
   await expect(customer.locator('.success-body .status-badge')).toHaveText('완료',{timeout:7000})
-  await customer.screenshot({path:'../artifacts/order-completed.png',fullPage:true})
+  await customer.screenshot({path:'test-results/screenshots/order-completed.png',fullPage:true})
   await customer.getByRole('button',{name:'주문 내역 확인'}).click()
   await expect(customer.locator('.history-card')).toContainText(number)
   expect(errors).toEqual([])
@@ -86,7 +86,7 @@ test('SQL analytics, CSV, AI fallback and table QR images',async({page})=>{
   await expect(page.getByText('통계 기반 분석', {exact:true})).toBeVisible()
   await expect(page.locator('.analysis-answer')).toContainText('선택 기간 매출은')
   await expect(page.getByText('API 키 없이 실제 주문 통계를 바탕으로 분석했습니다.')).toBeVisible()
-  await page.screenshot({path:'../artifacts/ai-analysis.png',fullPage:true})
+  await page.screenshot({path:'test-results/screenshots/ai-analysis.png',fullPage:true})
   await page.getByRole('link',{name:'테이블 · QR'}).click()
   await expect(page.locator('.qr-card')).toHaveCount(10)
   await expect.poll(()=>page.locator('.qr-card>img').evaluateAll(imgs=>imgs.every(i=>(i as HTMLImageElement).naturalWidth>0))).toBeTruthy()
@@ -125,5 +125,5 @@ test('mobile admin navigation and desktop customer assets',async({page})=>{
   await expect.poll(()=>page.locator('img').evaluateAll(imgs=>imgs.filter(i=>i.loading!=='lazy').every(i=>i.complete&&i.naturalWidth>0))).toBeTruthy()
   await page.evaluate(()=>{for(const img of document.querySelectorAll('img'))img.loading='eager'});
   await expect.poll(()=>page.locator('img').evaluateAll(imgs=>imgs.every(i=>i.complete&&i.naturalWidth>0))).toBeTruthy();
-  await page.screenshot({path:'../artifacts/customer-desktop.png',fullPage:true})
+  await page.screenshot({path:'test-results/screenshots/customer-desktop.png',fullPage:true})
 })
